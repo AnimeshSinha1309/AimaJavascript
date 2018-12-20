@@ -1,5 +1,6 @@
 import { Agent, Move } from "./agent";
 import { Measurement, Tile } from "./tile";
+import { Filtering } from "./filtering";
 
 declare var $: any;
 declare var SVG: any;
@@ -8,9 +9,11 @@ export class Grid {
 
   public readonly GRID_SIZE: number = 4;
   public readonly UX_SIZE: number = 600;
-  public agent: Agent;
-  public tiles: Tile[][] = [];
+  public readonly ELEMENT: string = "drawing";
   public canvas: any;
+  public agent: Agent;
+  public modelFilter: Filtering;
+  public tiles: Tile[][] = [];
 
   constructor() {
     for (let i = 0; i < this.GRID_SIZE; i++) {
@@ -22,18 +25,7 @@ export class Grid {
     }
     this.render();
     this.agent = new Agent(this);
-    // Binding the Keypress Event
-    $("html").on("keydown", (e: any) => {
-      if (e.which === 37 || e.which === "A".charCodeAt(0)) {
-        this.agent.move(Move.Left);
-      } else if (e.which === 38 || e.which === "W".charCodeAt(0)) {
-        this.agent.move(Move.Up);
-      } else if (e.which === 39 || e.which === "D".charCodeAt(0)) {
-        this.agent.move(Move.Right);
-      } else if (e.which === 40 || e.which === "S".charCodeAt(0)) {
-        this.agent.move(Move.Down);
-      }
-    });
+    this.modelFilter = new Filtering(this);
   }
 
   public getTile(i: number, j: number): Tile {
@@ -90,10 +82,11 @@ export class Grid {
     }
     this.getTile(1, 1).measured = true;
     this.agent.reset();
+    this.modelFilter.render();
   }
 
   public render() {
-    this.canvas = SVG("drawing").size(this.UX_SIZE, this.UX_SIZE);
+    this.canvas = SVG(this.ELEMENT).size(this.UX_SIZE, this.UX_SIZE);
     const BLOCK_SIZE: number = this.UX_SIZE / this.GRID_SIZE;
     for (let i = 0; i < this.GRID_SIZE; i++) {
       for (let j = 0; j < this.GRID_SIZE; j++) {
